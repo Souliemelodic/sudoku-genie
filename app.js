@@ -6,10 +6,12 @@ const modeButtons = [...document.querySelectorAll('[data-level]')];
 
 let puzzle = [];
 let original = [];
+let solution = [];
 let selected = null;
 let notesMode = false;
 let startedAt = 0;
 let timerId;
+let activeLevel = 'easy';
 
 const blankCount = { easy: 38, medium: 48, hard: 56 };
 
@@ -25,7 +27,8 @@ function makeSolution() {
 }
 
 function newGame(level) {
-  const solution = makeSolution();
+  activeLevel = level;
+  solution = makeSolution().flat();
   puzzle = solution.flat();
   shuffled([...Array(81).keys()]).slice(0, blankCount[level]).forEach(index => { puzzle[index] = null; });
   original = [...puzzle];
@@ -40,8 +43,20 @@ function render() {
   puzzle.forEach((value, index) => {
     const cell = document.createElement('button');
     const given = original[index] !== null;
-    cell.className = `cell${given ? ' given' : ''}${selected === index ? ' selected' : ''}${typeof value === 'string' ? ' notes' : ''}`;
-    cell.textContent = value || '';
+    const answer = typeof value === 'number' && !given;
+    cell.className = `cell${given ? ' given' : ''}${selected === index ? ' selected' : ''}${typeof value === 'string' ? ' notes' : ''}${answer ? (value === solution[index] ? ' correct' : ' incorrect') : ''}`;
+    if (typeof value === 'string') {
+      const notes = document.createElement('span');
+      notes.className = 'note-grid';
+      for (let number = 1; number <= 9; number += 1) {
+        const note = document.createElement('span');
+        note.textContent = value.includes(String(number)) ? number : '';
+        notes.append(note);
+      }
+      cell.append(notes);
+    } else {
+      cell.textContent = value || '';
+    }
     cell.disabled = given;
     cell.setAttribute('role', 'gridcell');
     cell.setAttribute('aria-label', `Row ${Math.floor(index / 9) + 1}, column ${(index % 9) + 1}`);
@@ -57,7 +72,7 @@ function enter(value) {
     const notes = typeof current === 'string' ? current.split('') : [];
     puzzle[selected] = notes.includes(value) ? notes.filter(note => note !== value).join('') || null : [...notes, value].sort().join('');
   } else {
-    puzzle[selected] = value || null;
+    puzzle[selected] = value ? Number(value) : null;
   }
   render();
 }
@@ -81,10 +96,9 @@ notesButton.addEventListener('click', () => {
   notesButton.setAttribute('aria-pressed', notesMode);
 });
 resetButton.addEventListener('click', () => {
-  puzzle = [...original];
-  selected = null;
-  render();
-  startTimer();
+  notesMode = false;
+  notesButton.setAttribute('aria-pressed', 'false');
+  newGame(activeLevel);
 });
 modeButtons.forEach(button => button.addEventListener('click', () => newGame(button.dataset.level)));
 newGame('easy');
