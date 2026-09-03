@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sudoku Genie</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="toolbar" aria-label="Game controls">
+        <div class="modes" role="group" aria-label="Difficulty">
+          <button data-level="easy">Easy</button>
+          <button data-level="medium">Medium</button>
+          <button data-level="hard">Hard</button>
+        </div>
+        <div class="actions">
+          <time id="timer" datetime="PT0S">00:00</time>
+          <button id="notes" aria-pressed="false">Notes</button>
+          <button id="reset">Reset</button>
+        </div>
+      </section>
+      <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
