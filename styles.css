@@ -17,3 +17,73 @@ time { font-variant-numeric: tabular-nums; min-width: 44px; }
 .cell.incorrect { color: #b42318; background: #fff0ee; }
 .note-grid { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; align-items: center; justify-items: center; font-size: clamp(.55rem, 1.7vw, .78rem); line-height: 1; color: #55617d; }
 @media (max-width: 430px) { .toolbar { justify-content: center; } }
+
+/* ===== Number Pad ===== */
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.numpad button {
+    padding: 16px 8px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #ccd2df;
+    border-radius: 8px;
+    background: white;
+    color: #182033;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 56px;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.numpad button:hover {
+    background: #e8edf1;
+}
+
+.numpad button:active {
+    transform: scale(0.92);
+    background: #d0d7e5;
+}
+
+.numpad .erase {
+    background: #f8f0f0;
+    font-size: 1.2rem;
+}
+
+.numpad .erase:hover {
+    background: #f0e0e0;
+}
+
+.numpad button.used {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+@media (max-width: 430px) {
+    .numpad {
+        gap: 5px;
+        max-width: 100%;
+    }
+    .numpad button {
+        padding: 12px 4px;
+        font-size: 1.2rem;
+        min-height: 48px;
+    }
+}
+
+@media (max-width: 360px) {
+    .numpad button {
+        padding: 8px 2px;
+        font-size: 1rem;
+        min-height: 40px;
+    }
+}

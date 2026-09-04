@@ -17,11 +17,30 @@
         <div class="actions">
           <time id="timer" datetime="PT0S">00:00</time>
           <button id="notes" aria-pressed="false">Notes</button>
+          <button id="undo">↩ Undo</button>
+          <button id="hint"> Hint</button>
           <button id="reset">Reset</button>
         </div>
       </section>
       <div id="board" class="board" role="grid" aria-label="Sudoku board"></div>
+    </div>
+        
+        <!-- ===== NUMBER PAD - ADDED HERE ===== -->
+        <div class="numpad" role="group" aria-label="Number pad">
+            <button data-num="1">1</button>
+            <button data-num="2">2</button>
+            <button data-num="3">3</button>
+            <button data-num="4">4</button>
+            <button data-num="5">5</button>
+            <button data-num="6">6</button>
+            <button data-num="7">7</button>
+            <button data-num="8">8</button>
+            <button data-num="9">9</button>
+            <button data-num="0" class="erase">⌫</button>
+        </div>
+        
+        <script src="app.js"></script>
     </main>
-    <script src="app.js"></script>
-  </body>
+</body>
 </html>
+
