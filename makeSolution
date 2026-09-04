@@ -15,13 +15,36 @@ function makeSolution() {
 }
 
 function giveHint() {
+    // Check if hints are available
     if (hintsLeft <= 0) {
-        showTemporaryMessage('❌ No hints left!');
+        showTemporaryMessage('❌ No hints left! You used all 3 hints.');
         return;
     }
     
-    // ... existing code ...
+    // Find first empty OR incorrect cell (skip given/original cells)
+    let hintIndex = -1;
+    for (let i = 0; i < puzzle.length; i++) {
+        // Skip cells that were originally given
+        if (original[i] !== null) continue;
+        
+        // Check if cell is empty OR has wrong number
+        if (puzzle[i] === null || (typeof puzzle[i] === 'number' && puzzle[i] !== solution[i])) {
+            hintIndex = i;
+            break;
+        }
+    }
     
+    // If no cell needs a hint
+    if (hintIndex === -1) {
+        showTemporaryMessage('🎉 Puzzle is solved or all cells are correct!');
+        return;
+    }
+    
+    // Place the correct number
+    puzzle[hintIndex] = solution[hintIndex];
+    original[hintIndex] = solution[hintIndex]; // Lock it so user can't change it
+    
+    // Decrease hints left
     hintsLeft--;
     
     // Update hint button text
@@ -30,22 +53,176 @@ function giveHint() {
         hintBtn.textContent = `💡 Hint (${hintsLeft})`;
         if (hintsLeft === 0) {
             hintBtn.style.opacity = '0.5';
+            hintBtn.style.cursor = 'not-allowed';
         }
     }
     
-    // ... rest of code ...
+    // Re-render the board
+    render();
+    updateAttemptsDisplay();
+    
+    // Show success message
+    const row = Math.floor(hintIndex / 9) + 1;
+    const col = (hintIndex % 9) + 1;
+    showTemporaryMessage(`💡 Hint placed at Row ${row}, Column ${col}! (${hintsLeft} hints remaining)`);
 }
 
 function newGame(level) {
-    // ... existing code ...
-    hintsLeft = 3;
+    activeLevel = level;
+    solution = makeSolution().flat();
+    puzzle = solution.flat();
+    shuffled([...Array(81).keys()]).slice(0, blankCount[level]).forEach(index => {
+        puzzle[index] = null;
+    });
+    original = [...puzzle];
+    selected = null;
+    history = [];
+    hintsLeft = 3; // Reset hints
+    incorrectAttempts = 0; // Reset incorrect attempts
     
     // Reset hint button
     const hintBtn = document.querySelector('#hint');
     if (hintBtn) {
         hintBtn.textContent = '💡 Hint (3)';
         hintBtn.style.opacity = '1';
+        hintBtn.style.cursor = 'pointer';
     }
     
+    // Reset attempts display
+    const attemptsDisplay = document.querySelector('#attempts');
+    if (attemptsDisplay) {
+        attemptsDisplay.textContent = '❌ 0/3';
+        attemptsDisplay.className = 'attempts';
+    }
     
+    modeButtons.forEach(button => button.classList.toggle('active', button.dataset.level === level));
+    render();
+    startTimer();
+    
+}
+
+function showTemporaryMessage(message) {
+    // Remove any existing message
+    const existing = document.querySelector('.temp-message');
+    if (existing) existing.remove();
+    
+    // Create message element
+    const msg = document.createElement('div');
+    msg.className = 'temp-message';
+    msg.textContent = message;
+    msg.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(24, 32, 51, 0.95);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        z-index: 1000;
+        animation: fadeInUp 0.3s ease;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        pointer-events: none;
+    `;
+    document.body.appendChild(msg);
+    
+    // Auto-remove after 2.5 seconds
+    setTimeout(() => {
+        msg.style.opacity = '0';
+        msg.style.transition = 'opacity 0.3s';
+        setTimeout(() => {
+            if (msg.parentNode) msg.remove();
+        }, 300);
+    }, 2500);
+}
+
+let incorrectAttempts = 0;
+const MAX_INCORRECT_ATTEMPTS = 3;
+
+function undo() {
+    if (history.length === 0) {
+        showTemporaryMessage('Nothing to undo!');
+        return;
+    }
+    const lastMove = history.pop();
+    puzzle[lastMove.index] = lastMove.value;
+    render();
+    updateAttemptsDisplay(); 
+}
+
+function enter(value) {
+    if (selected === null || original[selected] !== null) return;
+    
+    // Save state for undo
+    history.push({
+        index: selected,
+        value: puzzle[selected],
+        notesMode: notesMode
+    });
+
+    const current = puzzle[selected];
+    
+    if (notesMode && value) {
+        const notes = current && typeof current === 'string' ? current : '';
+        puzzle[selected] = notes.includes(value) ? 
+            notes.split('').filter(n => n !== value).join('') : 
+            [...notes, value].sort().join('');
+    } else {
+        const newValue = value ? Number(value) : null;
+        puzzle[selected] = newValue;
+        
+        // ===== CHECK INCORRECT ATTEMPTS =====
+        if (newValue !== null && newValue !== solution[selected]) {
+            incorrectAttempts++;
+            console.log(`Incorrect attempts: ${incorrectAttempts}/${MAX_INCORRECT_ATTEMPTS}`);
+            
+            // Show warning
+            const remaining = MAX_INCORRECT_ATTEMPTS - incorrectAttempts;
+            if (remaining > 0) {
+                showTemporaryMessage(`⚠️ Wrong number! ${remaining} attempts remaining.`);
+            }
+            
+            // Check if max attempts reached
+            if (incorrectAttempts >= MAX_INCORRECT_ATTEMPTS) {
+                showTemporaryMessage('❌ GAME OVER! Too many incorrect attempts. Reset to try again.');
+                
+                // Disable all non-given cells
+                document.querySelectorAll('.cell:not(.given)').forEach(cell => {
+                    cell.disabled = true;
+                });
+                
+                render();
+                return;
+            }
+        } else if (newValue !== null && newValue === solution[selected]) {
+            // Reduce incorrect attempts when they get one right (encouragement)
+            if (incorrectAttempts > 0) {
+                incorrectAttempts--;
+            }
+        }
+    }
+    checkCompletion();
+    render();
+    updateAttemptsDisplay();
+}
+
+// ===== UPDATE ATTEMPTS DISPLAY =====
+function updateAttemptsDisplay() {
+    const attemptsDisplay = document.querySelector('#attempts');
+    if (!attemptsDisplay) return;
+    
+    const remaining = MAX_INCORRECT_ATTEMPTS - incorrectAttempts;
+    attemptsDisplay.textContent = `❌ ${incorrectAttempts}/${MAX_INCORRECT_ATTEMPTS}`;
+    
+    // Change color based on attempts
+    attemptsDisplay.className = 'attempts';
+    if (incorrectAttempts >= MAX_INCORRECT_ATTEMPTS) {
+        attemptsDisplay.classList.add('danger');
+    } else if (incorrectAttempts >= MAX_INCORRECT_ATTEMPTS - 1) {
+        attemptsDisplay.classList.add('warning');
+    }
+
 }

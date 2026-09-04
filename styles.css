@@ -134,3 +134,34 @@ time { font-variant-numeric: tabular-nums; min-width: 44px; }
 .temp-message {
     animation: fadeInUp 0.3s ease;
 }
+
+/* ===== Attempts Counter ===== */
+.attempts {
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #f8f0f0;
+    border: 1px solid #ccd2df;
+    min-width: 50px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.attempts.warning {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.attempts.danger {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
