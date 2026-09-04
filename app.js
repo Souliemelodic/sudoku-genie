@@ -102,3 +102,92 @@ resetButton.addEventListener('click', () => {
 });
 modeButtons.forEach(button => button.addEventListener('click', () => newGame(button.dataset.level)));
 newGame('easy');
+
+// ===== UNDO =====
+function undo() {
+    if (history.length === 0) {
+        // Optional: Visual feedback that nothing to undo
+        const undoBtn = document.querySelector('#undo');
+        if (undoBtn) {
+            undoBtn.style.transform = 'scale(0.9)';
+            undoBtn.style.opacity = '0.5';
+            setTimeout(() => {
+                undoBtn.style.transform = '';
+                undoBtn.style.opacity = '1';
+            }, 300);
+        }
+        return;
+    }
+    const lastMove = history.pop();
+    puzzle[lastMove.index] = lastMove.value;
+    render();
+}
+
+// ===== HINT =====
+function giveHint() {
+    if (hintsLeft <= 0) {
+        alert('No hints left! You used all 3 hints. ');
+        return;
+    }
+    
+    // Find first empty or incorrect cell
+    const emptyIndex = puzzle.findIndex((val, idx) => 
+        (val === null || (typeof val === 'number' && val !== solution[idx])) && 
+        original[idx] === null
+    );
+    
+    if (emptyIndex === -1) {
+        alert('🎉 Puzzle is already solved! No hints needed.');
+        return;
+    }
+    
+    // Place the correct number
+    puzzle[emptyIndex] = solution[emptyIndex];
+    original[emptyIndex] = solution[emptyIndex]; // Lock it so user can't change it
+    hintsLeft--;
+    
+    // Visual feedback
+    const row = Math.floor(emptyIndex / 9) + 1;
+    const col = (emptyIndex % 9) + 1;
+    render();
+    
+    // Show hint message
+    const hintMessage = `💡 Hint placed at Row ${row}, Column ${col}! (${hintsLeft} hints remaining)`;
+    showTemporaryMessage(hintMessage);
+}
+
+// ===== SHOW TEMPORARY MESSAGE (Helper) =====
+function showTemporaryMessage(message) {
+    // Remove any existing message
+    const existing = document.querySelector('.temp-message');
+    if (existing) existing.remove();
+    
+    // Create message element
+    const msg = document.createElement('div');
+    msg.className = 'temp-message';
+    msg.textContent = message;
+    msg.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(24, 32, 51, 0.9);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        z-index: 1000;
+        animation: fadeInUp 0.3s ease;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(msg);
+    
+    // Auto-remove after 2 seconds
+    setTimeout(() => {
+        msg.style.opacity = '0';
+        msg.style.transition = 'opacity 0.3s';
+        setTimeout(() => msg.remove(), 300);
+    }, 2000);
+}

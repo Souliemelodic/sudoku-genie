@@ -13,3 +13,39 @@ function makeSolution() {
     }
     return rows;
 }
+
+function giveHint() {
+    if (hintsLeft <= 0) {
+        showTemporaryMessage('❌ No hints left!');
+        return;
+    }
+    
+    // ... existing code ...
+    
+    hintsLeft--;
+    
+    // Update hint button text
+    const hintBtn = document.querySelector('#hint');
+    if (hintBtn) {
+        hintBtn.textContent = `💡 Hint (${hintsLeft})`;
+        if (hintsLeft === 0) {
+            hintBtn.style.opacity = '0.5';
+        }
+    }
+    
+    // ... rest of code ...
+}
+
+function newGame(level) {
+    // ... existing code ...
+    hintsLeft = 3;
+    
+    // Reset hint button
+    const hintBtn = document.querySelector('#hint');
+    if (hintBtn) {
+        hintBtn.textContent = '💡 Hint (3)';
+        hintBtn.style.opacity = '1';
+    }
+    
+    
+}

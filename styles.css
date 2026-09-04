@@ -87,3 +87,50 @@ time { font-variant-numeric: tabular-nums; min-width: 44px; }
         min-height: 40px;
     }
 }
+
+/* ===== Undo & Hint Buttons ===== */
+#undo, #hint {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    transition: all 0.15s;
+}
+
+#undo:hover, #hint:hover {
+    transform: scale(1.05);
+}
+
+#undo:active, #hint:active {
+    transform: scale(0.95);
+}
+
+#undo[disabled], #hint[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ===== Hint Counter Badge ===== */
+.hint-counter {
+    background: #e8edf1;
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    margin-left: 4px;
+    font-weight: bold;
+    color: #182033;
+}
+
+/* ===== Temp Message Animation ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.temp-message {
+    animation: fadeInUp 0.3s ease;
+}
